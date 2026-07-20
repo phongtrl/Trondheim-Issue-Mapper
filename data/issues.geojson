@@ -1,0 +1,59 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "seed-marker-1",
+        "title": "Narrow crossing at Elgeseter",
+        "description": "Pedestrians and bikes stack up here during peak hours because the waiting area is too tight.",
+        "type": "marker",
+        "created": 1721462400000
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [10.3958, 63.4194]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "seed-line-1",
+        "title": "Painted lane fades near river route",
+        "description": "Wayfinding and lane markings become unclear along this stretch, especially in rain.",
+        "type": "line",
+        "created": 1721548800000
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [10.3862, 63.4308],
+          [10.3894, 63.4316],
+          [10.3938, 63.4322]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "seed-area-1",
+        "title": "Conflict zone outside station",
+        "description": "Large flows of buses, bikes, and walkers overlap in this area and visibility is limited.",
+        "type": "polygon",
+        "created": 1721635200000
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [10.4004, 63.4361],
+            [10.4027, 63.4362],
+            [10.4031, 63.4349],
+            [10.4011, 63.4345],
+            [10.4004, 63.4361]
+          ]
+        ]
+      }
+    }
+  ]
+}
