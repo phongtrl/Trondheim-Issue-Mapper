@@ -19,6 +19,13 @@ const baseLayers = {
 let activeLayer = baseLayers.CyclOSM;
 activeLayer.addTo(map);
 
+// Keep the map correctly sized when the sidebar collapses/expands or the layout changes.
+const mapElement = document.getElementById('map');
+if (window.ResizeObserver && mapElement) {
+  const mapResizeObserver = new ResizeObserver(() => map.invalidateSize());
+  mapResizeObserver.observe(mapElement);
+}
+
 const drawnItems = new L.FeatureGroup();
 map.addLayer(drawnItems);
 
@@ -72,7 +79,6 @@ const exportResult = document.getElementById('exportResult');
 const layerButtons = document.querySelectorAll('.layer-btn');
 const welcomeBox = document.getElementById('welcomeBox');
 const toggleInfoBtn = document.getElementById('toggleInfo');
-const toggleHeaderBtn = document.getElementById('toggleHeader');
 const controlDrawer = document.getElementById('controlDrawer');
 const drawerToggle = document.getElementById('toggleDrawer');
 const drawerToggle2 = document.getElementById('toggleDrawer2');
@@ -87,6 +93,8 @@ const fTitle = document.getElementById('fTitle');
 const fDesc = document.getElementById('fDesc');
 const saveForm = document.getElementById('saveForm');
 const cancelForm = document.getElementById('cancelForm');
+const formEyebrow = document.getElementById('formEyebrow');
+const formHeading = document.getElementById('formHeading');
 const autoBackupToggle = document.getElementById('autoBackupToggle');
 const downloadBackup = document.getElementById('downloadBackup');
 const restoreBackup = document.getElementById('restoreBackup');
@@ -97,7 +105,6 @@ const addFeatureBtn = document.getElementById('addFeatureBtn');
 const addFeaturePicker = document.getElementById('addFeaturePicker');
 const minimizedAddBtn = document.getElementById('minimizedAddBtn');
 const minimizedAddPicker = document.getElementById('minimizedAddPicker');
-const pageHeader = document.getElementById('pageHeader');
 const BACKUP_KEY = 'trondheim_warning_map_backup';
 const AUTO_BACKUP_KEY = 'trondheim_warning_map_auto_backup';
 const LOCAL_BACKUP_FILE_NAME = 'trondheim-backup.json';
@@ -161,6 +168,7 @@ const STARTER_GEOJSON_FALLBACK = {
 };
 
 let pendingLayer = null;
+let pendingIsNew = false;
 let selectedId = null;
 let sortOrder = 'newest';
 let filterType = 'all';
@@ -247,10 +255,37 @@ function savePendingLayer() {
   renderFeatureList();
   selectFeature(pendingLayer.feature.properties.id);
   pendingLayer = null;
+  pendingIsNew = false;
   featureForm.classList.add('hidden');
   fTitle.value = '';
   fDesc.value = '';
+  setFormMode('new');
   maybeAutoBackup();
+}
+
+function setFormMode(mode) {
+  if (mode === 'edit') {
+    formEyebrow.textContent = 'Edit report';
+    formHeading.textContent = 'Update report details';
+    saveForm.textContent = 'Save changes';
+  } else {
+    formEyebrow.textContent = 'New report';
+    formHeading.textContent = 'Add report details';
+    saveForm.textContent = 'Save report';
+  }
+}
+
+function openEditForm(layer) {
+  if (!layer) return;
+  layer.feature = layer.feature || layer.toGeoJSON();
+  layer.feature.properties = layer.feature.properties || {};
+  pendingLayer = layer;
+  pendingIsNew = false;
+  fTitle.value = layer.feature.properties.title || '';
+  fDesc.value = layer.feature.properties.description || '';
+  setFormMode('edit');
+  featureForm.classList.remove('hidden');
+  fTitle.focus();
 }
 
 function styleLayerAsRoad(layer) {
@@ -387,32 +422,68 @@ function renderFeatureList() {
       </td>
       <td>${featureTypeLabel(type)}</td>
       <td>
-        <button type="button" class="small-btn">Choose</button>
-        <select class="compact-control action-select" data-feature-id="${id}">
-          <option value="">Choose...</option>
-          <option value="zoom">Zoom</option>
-          <option value="edit">Edit</option>
-          <option value="delete">Delete</option>
-        </select>
+        <button type="button" class="row-icon-btn zoom-btn" title="Zoom to report" aria-label="Zoom to report">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+        </button>
+        <div class="row-menu">
+          <button type="button" class="row-icon-btn menu-btn" title="More actions" aria-label="More actions" aria-haspopup="true" aria-expanded="false">
+            <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="12" cy="19" r="1.8"></circle></svg>
+          </button>
+          <div class="row-menu-list hidden" role="menu">
+            <button type="button" role="menuitem" data-action="edit">Edit</button>
+            <button type="button" role="menuitem" data-action="delete" class="danger-item">Delete</button>
+          </div>
+        </div>
       </td>
     `;
 
-    row.querySelector('button').addEventListener('click', () => selectFeature(id));
-    const actionSelect = row.querySelector('.action-select');
-    actionSelect.addEventListener('change', (event) => {
-      handleFeatureAction(id, event.target.value);
-      event.target.value = '';
+    const zoomBtn = row.querySelector('.zoom-btn');
+    zoomBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      selectFeature(id);
     });
-    row.addEventListener('click', (event) => {
-      if (event.target.tagName !== 'BUTTON' && event.target.tagName !== 'SELECT' && event.target.tagName !== 'OPTION') {
-        selectFeature(id);
+
+    const menuBtn = row.querySelector('.menu-btn');
+    const menuList = row.querySelector('.row-menu-list');
+    menuBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const isOpen = !menuList.classList.contains('hidden');
+      closeAllRowMenus();
+      if (!isOpen) {
+        menuList.classList.remove('hidden');
+        menuBtn.setAttribute('aria-expanded', 'true');
       }
+    });
+    menuList.querySelectorAll('[data-action]').forEach((item) => {
+      item.addEventListener('click', (event) => {
+        event.stopPropagation();
+        closeAllRowMenus();
+        handleFeatureAction(id, item.dataset.action);
+      });
+    });
+
+    row.addEventListener('click', (event) => {
+      if (event.target.closest('.row-icon-btn') || event.target.closest('.row-menu-list')) {
+        return;
+      }
+      selectFeature(id);
     });
     tbody.appendChild(row);
   });
 
   updateFeatureCount();
 }
+
+function closeAllRowMenus() {
+  featureList.querySelectorAll('.row-menu-list').forEach((menu) => menu.classList.add('hidden'));
+  featureList.querySelectorAll('.menu-btn').forEach((btn) => btn.setAttribute('aria-expanded', 'false'));
+}
+
+document.addEventListener('click', (event) => {
+  if (!event.target.closest('.row-menu')) {
+    closeAllRowMenus();
+  }
+});
 
 function attachPopupAndLabel(layer) {
   layer.feature = layer.feature || layer.toGeoJSON();
@@ -440,10 +511,8 @@ function attachPopupAndLabel(layer) {
     const button = document.getElementById(`popup-edit-${props.id}`);
     if (button) {
       button.addEventListener('click', () => {
-        fTitle.value = props.title || '';
-        fDesc.value = props.description || '';
-        pendingLayer = layer;
-        featureForm.classList.remove('hidden');
+        layer.closePopup();
+        openEditForm(layer);
       });
     }
   });
@@ -466,10 +535,7 @@ function handleFeatureAction(featureId, action) {
       selectFeature(featureId);
       break;
     case 'edit':
-      fTitle.value = layer.feature.properties.title || '';
-      fDesc.value = layer.feature.properties.description || '';
-      pendingLayer = layer;
-      featureForm.classList.remove('hidden');
+      openEditForm(layer);
       break;
     case 'delete':
       drawnItems.removeLayer(layer);
@@ -821,12 +887,6 @@ minimizedAddPicker?.addEventListener('click', (event) => {
   minimizedAddPicker.classList.add('hidden');
 });
 
-toggleHeaderBtn.addEventListener('click', () => {
-  pageHeader.classList.toggle('hidden');
-  body.classList.toggle('header-hidden');
-  toggleHeaderBtn.textContent = pageHeader.classList.contains('hidden') ? 'Show header' : 'Hide header';
-});
-
 autoBackupToggle?.addEventListener('change', () => {
   localStorage.setItem(AUTO_BACKUP_KEY, autoBackupToggle.checked ? '1' : '0');
   if (autoBackupToggle.checked) {
@@ -887,7 +947,9 @@ saveForm.addEventListener('click', () => {
 });
 
 cancelForm.addEventListener('click', () => {
-  if (pendingLayer) {
+  // Only discard the layer when it was a brand-new draw. Editing an existing
+  // report must never delete it on cancel.
+  if (pendingLayer && pendingIsNew) {
     if (drawnItems.hasLayer(pendingLayer)) {
       drawnItems.removeLayer(pendingLayer);
     } else if (map.hasLayer(pendingLayer)) {
@@ -895,9 +957,11 @@ cancelForm.addEventListener('click', () => {
     }
   }
   pendingLayer = null;
+  pendingIsNew = false;
   featureForm.classList.add('hidden');
   fTitle.value = '';
   fDesc.value = '';
+  setFormMode('new');
 });
 
 window.addEventListener('keydown', (event) => {
@@ -916,6 +980,7 @@ map.on(L.Draw.Event.CREATED, function (event) {
   const layer = event.layer;
   const type = event.layerType;
   pendingLayer = layer;
+  pendingIsNew = true;
 
   if (type === 'polyline' || type === 'polygon') {
     snapLayerToExistingPath(pendingLayer, false);
@@ -928,6 +993,7 @@ map.on(L.Draw.Event.CREATED, function (event) {
   pendingLayer.feature.properties.id = generateFeatureId();
   pendingLayer.feature.properties.created = Date.now();
 
+  setFormMode('new');
   featureForm.classList.remove('hidden');
   fTitle.focus();
 });
