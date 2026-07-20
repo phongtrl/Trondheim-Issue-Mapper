@@ -2,34 +2,30 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#efe9dd" />
   <title>Trondheim Issue Mapper</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Old+Mincho:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="page-backdrop" aria-hidden="true">
-    <div class="aurora aurora-one"></div>
-    <div class="aurora aurora-two"></div>
-    <div class="grid-fade"></div>
-  </div>
-
   <header id="pageHeader" class="topbar">
     <div class="header-row">
       <div class="brand-block">
-        <p class="eyebrow">Street-level reporting</p>
+        <span class="brand-mark" aria-hidden="true"></span>
         <div class="brand">
-          <h1>Trondheim Issue Mapper</h1>
-          <p>Map friction points for people walking and cycling, then export a clean GeoJSON record for planning, maintenance, or advocacy.</p>
+          <p class="eyebrow">Trondheim · walk &amp; cycle</p>
+          <h1>Issue Mapper</h1>
+          <p class="brand-sub">A calm, shared map for noting street-level friction — then exporting it as clean GeoJSON.</p>
         </div>
       </div>
       <div class="header-actions">
-        <button id="toggleHeader" class="action-btn">Hide header</button>
-        <button id="toggleInfo" class="action-btn secondary">Guide</button>
+        <button id="toggleInfo" class="action-btn secondary" type="button">Guide</button>
+        <button id="toggleHeader" class="action-btn" type="button">Hide header</button>
       </div>
     </div>
   </header>
@@ -38,28 +34,28 @@
     <section class="map-panel">
       <div id="map"></div>
 
-      <section class="hero-card">
-        <p class="eyebrow">Live overview</p>
-        <h2>Trace hazards, pinch points, and route gaps across Trondheim.</h2>
-        <p class="hero-copy">Use the draw tools on the map or the report panel to add points, lines, and areas. Starter examples are loaded from a local GeoJSON file so the map is not empty on first open.</p>
+      <section class="hero-card panel">
+        <p class="eyebrow">Overview</p>
+        <h2>Notice the small things that slow people down.</h2>
+        <p class="hero-copy">Add points, lines, or areas straight on the map or from the panel. A few starter reports load from a local file so the map is never empty.</p>
         <div class="hero-metrics">
-          <div class="metric-chip">
+          <div class="metric">
             <span class="metric-value">3</span>
             <span class="metric-label">issue types</span>
           </div>
-          <div class="metric-chip">
+          <div class="metric">
             <span class="metric-value">GeoJSON</span>
-            <span class="metric-label">export ready</span>
+            <span class="metric-label">export</span>
           </div>
-          <div class="metric-chip">
+          <div class="metric">
             <span class="metric-value">Local</span>
-            <span class="metric-label">backup support</span>
+            <span class="metric-label">backup</span>
           </div>
         </div>
       </section>
 
-      <div class="map-legend glass-panel">
-        <div class="legend-title">Map key</div>
+      <div class="map-legend panel">
+        <p class="legend-title">Map key</p>
         <div class="legend-item">
           <span class="legend-marker marker"></span>
           <span>Point report</span>
@@ -73,23 +69,14 @@
           <span>Area concern</span>
         </div>
       </div>
-
-      <div class="floating-status glass-panel">
-        <p class="status-label">Workflow</p>
-        <ol class="status-steps">
-          <li>Pick a base map</li>
-          <li>Draw a feature</li>
-          <li>Name and export it</li>
-        </ol>
-      </div>
     </section>
 
     <aside class="control-drawer" id="controlDrawer">
       <div class="drawer-handle" id="drawerHandle">
-        <button class="drawer-toggle" id="toggleDrawer" aria-label="Toggle reports panel">
-          <span class="drawer-icon">≡</span>
+        <button class="drawer-toggle" id="toggleDrawer" type="button" aria-label="Open reports panel">
+          <span class="drawer-icon">☰</span>
         </button>
-        <button id="minimizedAddBtn" class="drawer-add-btn" title="Add report">+</button>
+        <button id="minimizedAddBtn" class="drawer-add-btn" type="button" title="Add report">+</button>
         <div id="minimizedAddPicker" class="minimized-add-picker hidden">
           <button type="button" data-draw-type="marker" class="small-btn">Point</button>
           <button type="button" data-draw-type="line" class="small-btn">Line</button>
@@ -98,39 +85,40 @@
       </div>
 
       <div class="drawer-content" id="drawerContent">
+        <div class="drawer-grip" aria-hidden="true"></div>
         <div class="drawer-header">
           <div>
-            <p class="section-label">Control deck</p>
-            <h2>Reports & controls</h2>
+            <p class="eyebrow">Control deck</p>
+            <h2>Reports &amp; controls</h2>
           </div>
-          <button id="toggleDrawer2" class="close-drawer-btn" aria-label="Minimize panel">−</button>
+          <button id="toggleDrawer2" class="close-drawer-btn" type="button" aria-label="Minimize panel">−</button>
         </div>
 
         <div class="drawer-scroll">
-          <div class="control-section intro-section">
+          <div class="control-section">
             <div class="intro-card">
-              <p class="intro-title">Built for quick field reporting</p>
-              <p class="intro-copy">Keep the map open during a walk, ride, or desktop review. Every item can be selected, edited, exported, or restored from backup.</p>
+              <p class="intro-title">Made for quick field notes</p>
+              <p class="intro-copy">Keep the map open on a walk, a ride, or at your desk. Every item can be selected, edited, exported, or restored.</p>
             </div>
           </div>
 
           <div class="control-section">
             <p class="section-label">Basemap</p>
             <div class="map-actions">
-              <button class="layer-btn active" data-layer="CyclOSM">CyclOSM</button>
-              <button class="layer-btn" data-layer="OpenStreetMap">OSM</button>
-              <button class="layer-btn" data-layer="Satellite">Satellite</button>
+              <button class="layer-btn active" data-layer="CyclOSM" type="button">CyclOSM</button>
+              <button class="layer-btn" data-layer="OpenStreetMap" type="button">OSM</button>
+              <button class="layer-btn" data-layer="Satellite" type="button">Satellite</button>
             </div>
           </div>
 
           <div class="control-section">
             <details open>
-              <summary>How it works</summary>
+              <summary><span>How it works</span><span class="summary-mark">＋</span></summary>
               <ul class="quick-tips">
                 <li>Starter reports load from a local JSON file.</li>
-                <li>Use the draw tools in the map corner or the add menu below.</li>
-                <li>Select an item in the table to zoom, edit, or delete it.</li>
-                <li>Export whenever you want a clean handoff.</li>
+                <li>Draw from the map corner or the add menu below.</li>
+                <li>Select a row to zoom, edit, or delete it.</li>
+                <li>Export any time for a clean handoff.</li>
               </ul>
             </details>
           </div>
@@ -153,7 +141,7 @@
                 <option value="polygon">Areas only</option>
               </select>
             </div>
-            <button id="addFeatureBtn" class="primary-btn add-feature-btn">+ Add report</button>
+            <button id="addFeatureBtn" class="primary-btn add-feature-btn" type="button">+ Add report</button>
             <div id="addFeaturePicker" class="add-feature-picker hidden">
               <button type="button" data-draw-type="marker" class="small-btn">Point</button>
               <button type="button" data-draw-type="line" class="small-btn">Line</button>
@@ -163,28 +151,28 @@
           </div>
 
           <div class="control-section">
-            <h3>Share & backup</h3>
+            <h3>Share &amp; backup</h3>
             <div class="export-actions email-send-column">
-              <button id="exportBtn" class="primary-btn">Export GeoJSON</button>
+              <button id="exportBtn" class="primary-btn" type="button">Export GeoJSON</button>
               <div class="email-block">
-                <button id="emailBtn" class="secondary-btn">Email features</button>
+                <button id="emailBtn" class="secondary-btn" type="button">Email features</button>
                 <input id="emailAddress" type="email" placeholder="Recipient email" />
               </div>
             </div>
-            <p class="help-text">Export first or open a mail draft with the latest file prepared for attachment.</p>
+            <p class="help-text">Export first, or open a mail draft with the latest file prepared for attachment.</p>
             <div id="exportResult" class="output-box">Ready.</div>
           </div>
 
           <div class="control-section">
             <details>
-              <summary>Backup settings</summary>
+              <summary><span>Backup settings</span><span class="summary-mark">＋</span></summary>
               <div class="backup-section">
-                <label class="backup-toggle"><input id="autoBackupToggle" type="checkbox" /> Auto-save to browser</label>
-                <p class="help-text">Stored reports can override the starter JSON on future visits when auto backup is enabled.</p>
+                <label class="backup-toggle"><input id="autoBackupToggle" type="checkbox" /> <span>Auto-save to browser</span></label>
+                <p class="help-text">Stored reports can replace the starter file on future visits when auto backup is on.</p>
                 <div class="backup-actions">
                   <button id="downloadBackup" type="button" class="small-btn">Download</button>
                   <button id="restoreBackup" type="button" class="small-btn">Restore</button>
-                  <button id="chooseLocalBackupFile" type="button" class="small-btn">Choose local file</button>
+                  <button id="chooseLocalBackupFile" type="button" class="small-btn">Choose file</button>
                 </div>
                 <select id="backupTarget" class="compact-control">
                   <option value="local">Browser storage</option>
@@ -206,13 +194,13 @@
 
   <div id="welcomeBox" class="overlay-box hidden">
     <div class="overlay-content">
-      <button id="closeWelcome" class="close-btn">&times;</button>
+      <button id="closeWelcome" class="close-btn" type="button">&times;</button>
       <p class="eyebrow">Quick guide</p>
-      <h3>Report cycle and pedestrian issues</h3>
+      <h3>Report cycle &amp; pedestrian issues</h3>
       <p>Use the draw tools to place a point, line, or area. Add a short title and description, then manage the item from the reports table.</p>
       <p>The page ships with example reports from a local GeoJSON file, but your own backup can replace them.</p>
       <div class="form-actions compact-actions">
-        <button id="gotItBtn" class="primary">Got it</button>
+        <button id="gotItBtn" class="primary" type="button">Got it</button>
       </div>
     </div>
   </div>
@@ -222,7 +210,7 @@
       <p class="eyebrow">New report</p>
       <h3>Add report details</h3>
       <label for="fTitle">Title</label>
-      <input id="fTitle" type="text" placeholder="Short title, for example Missing curb ramp" />
+      <input id="fTitle" type="text" placeholder="Short title, e.g. Missing curb ramp" />
       <label for="fDesc">Description</label>
       <textarea id="fDesc" rows="4" placeholder="Describe the issue, exact location, and why it matters"></textarea>
       <div class="form-actions">
@@ -237,6 +225,3 @@
   <script src="app.js"></script>
 </body>
 </html>
-
-
-

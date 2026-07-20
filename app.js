@@ -4,15 +4,15 @@ const map = L.map('map').setView([63.4305, 10.3951], 13);
 const baseLayers = {
   OpenStreetMap: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
-    attribution: '� OpenStreetMap contributors'
+    attribution: 'OpenStreetMap contributors'
   }),
   CyclOSM: L.tileLayer('https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png', {
     maxZoom: 20,
-    attribution: '� OpenStreetMap contributors, � CyclOSM'
+    attribution: 'OpenStreetMap contributors, CyclOSM'
   }),
   Satellite: L.tileLayer('https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless/GoogleMapsCompatible/{z}/{y}/{x}.jpg', {
     maxZoom: 19,
-    attribution: '� EOX IT Services GmbH & Sentinel-2'
+    attribution: 'EOX IT Services GmbH and Sentinel-2'
   })
 };
 
@@ -356,9 +356,9 @@ function renderFeatureList() {
       <table class="feature-table">
         <thead>
           <tr>
-            <th>Tittel</th>
+            <th>Title</th>
             <th>Type</th>
-            <th>Handling</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody></tbody>
